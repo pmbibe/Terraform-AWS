@@ -11,6 +11,14 @@ provider "aws" {
   region = "ap-southeast-1"
 }
 
+backend "s3" {
+  bucket         = "pmbibe-tf-state"
+  key            = "remoteBackend/terraform.tfstate"
+  region         = "ap-southeast-1"
+  dynamodb_table = "terraform-state-locking"
+  encrypt        = true
+}
+
 resource "aws_s3_bucket" "terra_state" {
   bucket        = "pmbibe-tf-state"
   tags = {
@@ -44,4 +52,5 @@ resource "aws_dynamodb_table" "terraform_locks" {
     name = "LockID"
     type = "S"
   }
+
 }
