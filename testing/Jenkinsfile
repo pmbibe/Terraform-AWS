@@ -17,7 +17,12 @@ node("jenkins-agent") {
                     parameters: [choice(name: 'GIT_TAG', choices: "$name", description: 'Choice one')]
         
     }
-                
+
+    stage("Checkout tag"){
+        sh "
+            git checkout tags/${GIT_TAG}
+        "
+    }             
     stage("Get git tag Name"){
         sh '''
         cat currentVersion
