@@ -1,0 +1,54 @@
+def repository = "https://github.com/pmbibe/Terraform-AWS"
+def branch = "main"
+def userGit = "pmbibe"
+node("jenkins-agent") {
+    stage("Pull code from GitLab"){
+        git branch: "${branch}", credentialsId: "${userGit}", url: "${repository}"
+    }
+
+    stage("Install Terraform"){
+        sh '''
+            wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+            apt update -y
+            apt install terraform -y
+        '''
+    }
+
+    stage("Authen"){
+        withCredentials([usernamePassword(credentialsId: 'aws_access', passwordVariable: 'ACCESS_KEY', usernameVariable: 'KEY_ID')]) {
+            env.AWS_ACCESS_KEY_ID = "${KEY_ID}"
+            env.AWS_SECRET_ACCESS_KEY = "${ACCESS_KEY}"
+        }
+    }
+    
+    stage("Terraform Format"){
+        dir('./testing/examples/hello-world') {
+            sh '''
+            terraform fmt -check
+            '''
+        }
+
+    }
+    stage("Terraform Init"){
+        dir('./testing/examples/hello-world') {
+            sh '''
+            terraform init
+            '''
+        }
+
+    }
+    stage("Terraform Validate"){
+        dir('./testing/examples/hello-world') {
+            sh '''
+            terraform validate -no-color
+            '''
+        }
+
+    }
+
+
+
+}
+
+
