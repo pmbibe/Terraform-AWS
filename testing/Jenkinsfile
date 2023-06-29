@@ -44,11 +44,28 @@ node("jenkins-agent") {
             terraform validate -no-color
             '''
         }
-
+    }
+    stage("Terraform Plan"){
+        dir('./testing/examples/hello-world') {
+            sh '''
+            terraform plan
+            '''
+        }        
+    }
+    stage("Terraform Apply"){
+        dir('./testing/examples/hello-world') {
+            sh '''
+            terraform apply -auto-approve
+            '''
+        }
+    }
+    stage("Terraform Destroy"){
+        dir('./testing/examples/hello-world') {
+            sh '''
+            terraform destroy -auto-approve
+            '''        
+    }
     }
 
-
-
 }
-
 
