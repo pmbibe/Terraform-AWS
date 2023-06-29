@@ -1,72 +1,90 @@
 def repository = "https://github.com/pmbibe/Terraform-AWS"
 def branch = "main"
 def userGit = "pmbibe"
+
+String gitTagName() {
+    return sh(returnStdout: true, script: "git tag --sort version:refname").trim()
+}
 node("jenkins-agent") {
     stage("Pull code from GitLab"){
         git branch: "${branch}", credentialsId: "${userGit}", url: "${repository}"
     }
 
-
-    stage("Install Terraform"){
-        sh '''
-            wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
-            apt upgrade -y
-            apt update -y
-            apt install terraform -y
-        '''
+    stage('Tag version'){
+        name = gitTagName()
+        echo "${name}"
+        env.GIT_TAG = input message: 'Choice your tag?', ok: 'Release!',
+                    parameters: [choice(name: 'GIT_TAG', choices: "$name", description: 'Choice one')]
+        
     }
-
-    stage("Install Go"){
+                
+    stage("Get git tag Name"){
         sh '''
-            apt install golang-go -y
+        cat currentVersion
         '''
-    }
-
-    stage("Install Go"){
-        sh '''
-            apt install golang-go -y
-        '''
-    }
-
-    stage("Authen"){
-        withCredentials([usernamePassword(credentialsId: 'aws_access', passwordVariable: 'ACCESS_KEY', usernameVariable: 'KEY_ID')]) {
-            env.AWS_ACCESS_KEY_ID = "${KEY_ID}"
-            env.AWS_SECRET_ACCESS_KEY = "${ACCESS_KEY}"
-        }
     }
     
-    stage("Terraform Format"){
-        dir('./testing/examples/hello-world') {
-            sh '''
-            terraform fmt -check
-            '''
-        }
 
-    }
-    stage("Terraform Init"){
-        dir('./testing/examples/hello-world') {
-            sh '''
-            terraform init
-            '''
-        }
+    // stage("Install Terraform"){
+    //     sh '''
+    //         wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    //         echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+    //         apt upgrade -y
+    //         apt update -y
+    //         apt install terraform -y
+    //     '''
+    // }
 
-    }
-    stage("Terraform Validate"){
-        dir('./testing/examples/hello-world') {
-            sh '''
-            terraform validate -no-color
-            '''
-        }
-    }
+    // stage("Install Go"){
+    //     sh '''
+    //         apt install golang-go -y
+    //     '''
+    // }
 
-    stage("Terraform Test"){
-        dir('./testing/tests/terratest') {
-            sh '''
-            go test . -v timeout 10m
-            '''
-        }        
-    }
+    // stage("Install Go"){
+    //     sh '''
+    //         apt install golang-go -y
+    //     '''
+    // }
+
+    // stage("Authen"){
+    //     withCredentials([usernamePassword(credentialsId: 'aws_access', passwordVariable: 'ACCESS_KEY', usernameVariable: 'KEY_ID')]) {
+    //         env.AWS_ACCESS_KEY_ID = "${KEY_ID}"
+    //         env.AWS_SECRET_ACCESS_KEY = "${ACCESS_KEY}"
+    //     }
+    // }
+    
+    // stage("Terraform Format"){
+    //     dir('./testing/examples/hello-world') {
+    //         sh '''
+    //         terraform fmt -check
+    //         '''
+    //     }
+
+    // }
+    // stage("Terraform Init"){
+    //     dir('./testing/examples/hello-world') {
+    //         sh '''
+    //         terraform init
+    //         '''
+    //     }
+
+    // }
+    // stage("Terraform Validate"){
+    //     dir('./testing/examples/hello-world') {
+    //         sh '''
+    //         terraform validate -no-color
+    //         '''
+    //     }
+    // }
+
+    // stage("Terraform Test"){
+    //     dir('./testing/tests/terratest') {
+    //         sh '''
+    //         go test . -v timeout 10m
+    //         '''
+    //     }        
+    // }
 
     // stage("Terraform Plan"){
     //     dir('./testing/examples/hello-world') {
