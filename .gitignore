@@ -9,3 +9,4 @@
 .terraformrc
 terraform.rc
 
+.terraform.lock.hcl
