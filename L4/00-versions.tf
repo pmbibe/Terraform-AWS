@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 5.2"
     }
     null = {
       source  = "hashicorp/null"
@@ -12,6 +12,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = "var.aws_region"
+  region  = var.aws_region
   profile = "default"
+
 }
