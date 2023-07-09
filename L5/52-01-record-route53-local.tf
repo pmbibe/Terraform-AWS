@@ -3,12 +3,6 @@ locals {
   #   zone_id = values(module.zones.route53_zone_zone_id)[0]
   records = [
     {
-      name    = ""
-      type    = "A"
-      ttl     = 300
-      records = ["127.0.0.1"]
-    },
-    {
       name    = "www"
       type    = "CNAME"
       ttl     = 300
