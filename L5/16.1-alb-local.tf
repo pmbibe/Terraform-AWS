@@ -37,6 +37,7 @@ locals {
     {
       port     = "80"
       protocol = "HTTP"
+
       # action_type = "redirect"
       # redirect = {
       #   port        = "443"
@@ -46,10 +47,11 @@ locals {
 
     }
   ]
-  alb_http_tcp_listener_rules = [
+  alb_http_tcp_listener_rules = flatten([[
     for index in local.target_group_ids :
     {
       http_tcp_listener_index = 0
+      priority = index
       actions = [
         {
           type               = "forward"
@@ -59,8 +61,25 @@ locals {
       conditions = [{
         path_patterns = [join("", ["/app", tostring(index + 1), "*"])]
       }]
-    }
-  ]
+    }],
+    [{
+      http_tcp_listener_index = 0
+      priority = 100
+      actions = [
+        {
+          type = "fixed-response"
+          fixed_response = {
+            content_type = "text/plain"
+            message_body = "Fixed Static message - for Root Context"
+            status_code  = "200"
+          }
+        }
+      ]
+      conditions = [{
+        path_patterns = ["/*"]
+      }]
+    }]
+  ])
   # alb_https_listeners = [
   #   {
   #     port            = 443
