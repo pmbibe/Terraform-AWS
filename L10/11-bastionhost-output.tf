@@ -3,4 +3,4 @@ output "bastionhost_ids" {
 }
 output "bastionhost_ips" {
   value = module.ec2-instance-bastion.public_ip
-}
+}   
