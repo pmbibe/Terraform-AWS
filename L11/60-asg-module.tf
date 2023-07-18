@@ -31,7 +31,6 @@ module "autoscaling" {
       target_tracking_configuration = {
         predefined_metric_specification = {
           predefined_metric_type = "ASGAverageCPUUtilization"
-          resource_label         = "Average CPU Utilization"
         }
         target_value = 50.0
       }
@@ -51,7 +50,7 @@ module "autoscaling" {
       target_tracking_configuration = {
         predefined_metric_specification = {
           predefined_metric_type = "ALBRequestCountPerTarget"
-          resource_label         = "ALB Request Count Per Target"
+          resource_label         = "${module.alb.lb_arn_suffix}/${module.alb.target_group_arn_suffixes[0]}"
         }
         target_value = 10.0
       }
